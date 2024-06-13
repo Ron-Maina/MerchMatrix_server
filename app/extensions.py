@@ -1,7 +1,7 @@
 from sqlalchemy import MetaData
 from flask_sqlalchemy import SQLAlchemy
 from flask_restx import Api
-# from flask_jwt_extended import JWTManager
+from flask_jwt_extended import JWTManager
 
 
 metadata = MetaData(naming_convention={
@@ -14,4 +14,4 @@ metadata = MetaData(naming_convention={
 
 api = Api()
 db = SQLAlchemy(metadata=metadata)
-# jwt = JWTManager()
+jwt = JWTManager()

@@ -1,10 +1,9 @@
 from flask import make_response, jsonify, request
 from flask_restx import Resource, Namespace
-from flask_cors import cross_origin
-# from flask_jwt_extended import (create_access_token, 
-#                                 create_refresh_token, 
-#                                 jwt_required, get_jwt,
-#                                 current_user, get_jwt_identity)
+from flask_jwt_extended import (create_access_token, 
+                                create_refresh_token, 
+                                jwt_required, get_jwt,
+                                current_user, get_jwt_identity)
 from werkzeug.exceptions import BadRequest
 from random import randint
 
@@ -67,7 +66,6 @@ class SignUp(Resource):
 @ns.route('/login')
 class Login(Resource):
     @ns.expect(user_login_model)
-    @cross_origin(origin='*',headers=['Content-Type','Authorization'])
     def post(self):
         try:
             print('server reached')
@@ -95,16 +93,16 @@ class Login(Resource):
             #     return response
                
             if (user):
-                # access_token = create_access_token(identity=user.email)
-                # refresh_token = create_refresh_token(identity=user.email)
+                access_token = create_access_token(identity=user.email)
+                refresh_token = create_refresh_token(identity=user.email)
 
                 response = make_response(jsonify(
                     {
                         "username": user.name,
                         "cart": [cart_item.to_dict() for cart_item in user.my_cart],
                         "tokens": {
-                            # "access": access_token,
-                            # "refresh": refresh_token, 
+                            "access": access_token,
+                            "refresh": refresh_token, 
                         },
                         "id": user.id,  
                     },
@@ -121,14 +119,14 @@ class Login(Resource):
 
 @ns.route('/refresh')
 class RefreshSession(Resource):
-    # @jwt_required(refresh=True)
+    @jwt_required(refresh=True)
     def get(self):
-        # identity = get_jwt_identity()
-        # new_access_token = create_access_token(identity=identity)
+        identity = get_jwt_identity()
+        new_access_token = create_access_token(identity=identity)
 
         return make_response(
-            # jsonify({"access_token": new_access_token}),
-            # 200
+            jsonify({"access_token": new_access_token}),
+            200
         )
     
 
