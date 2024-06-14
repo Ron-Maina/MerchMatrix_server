@@ -51,9 +51,8 @@ class SignUp(Resource):
                     email = user_data.get('email'),
                     number = user_data.get('number'),
                     role = 'customer',
-                    password_hash = user_data.get('password')
                 )
-                # new_user.password_hash = data.get('password')
+                new_user.password_hash = user_data.get('password')
 
                 db.session.add(new_user)
                 db.session.commit()
