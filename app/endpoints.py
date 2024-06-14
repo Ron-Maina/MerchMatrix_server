@@ -29,6 +29,8 @@ class SignUp(Resource):
     def post(self):
         try:
             data = request.get_json()
+            user_data = data.get('user', {})
+
             # subject = data.get('sub')
             
             existing_user = Users.query.filter_by(email=data.get('email')).first()
@@ -45,10 +47,11 @@ class SignUp(Resource):
             #     db.session.commit()
             else:
                 new_user = Users(
-                    name = data.get('username'),
-                    email = data.get('email'),
-                    number = data.get('number'),
+                    name = user_data.get('username'),
+                    email = user_data.get('email'),
+                    number = user_data.get('number'),
                     role = 'customer',
+                    password_hash = user_data.get('password')
                 )
                 # new_user.password_hash = data.get('password')
 
@@ -56,7 +59,18 @@ class SignUp(Resource):
                 db.session.commit()
 
 
-            return jsonify(new_user.to_dict(), 201)
+            user_dict = {
+                "id": new_user.id,
+                "name": new_user.name,
+                "email": new_user.email,
+                "number": new_user.number,
+            }
+
+            result = make_response(
+                jsonify(user_dict),
+                200
+            )
+            return result
         
         except ValueError:
             raise BadRequest(["validation errors"])  
@@ -65,7 +79,7 @@ class SignUp(Resource):
 
 @ns.route('/login')
 class Login(Resource):
-    @ns.expect(user_login_model)
+    @ns.expect(user_login_model) 
     def post(self):
         try:
             print('server reached')
@@ -150,15 +164,13 @@ class AddToCart(Resource):
                 db.session.add(added_to_cart)
                 db.session.commit()
 
+            # return make_response(
+            #     jsonify({added_to_cart})
+            # )
+
         except ValueError:
             raise BadRequest(["validation errors"])  
 
 
 
-
-# 'id': self.id,
-#             'product_name': self.product_name,
-#             'product_id': self.product_id,
-#             'payment_status': self.payment_status,
-#             'user_id': self.user_id
 
