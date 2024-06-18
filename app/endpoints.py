@@ -109,8 +109,7 @@ class Login(Resource):
                 access_token = create_access_token(identity=user.email)
                 refresh_token = create_refresh_token(identity=user.email)
 
-                response = make_response(jsonify(
-                    {
+                user_dict = {
                         "username": user.name,
                         "cart": [cart_item.to_dict() for cart_item in user.my_cart],
                         "tokens": {
@@ -118,10 +117,12 @@ class Login(Resource):
                             "refresh": refresh_token, 
                         },
                         "id": user.id,  
-                    },
+                }
+
+                response = make_response(
+                    jsonify(user_dict),
                     200
-                ))
-                # response.headers.add('Access-Control-Allow-Origin', '*')
+                )
                 return response
             
             return jsonify ({"error": "Invalid Username or Password"}), 400
@@ -134,15 +135,37 @@ class Login(Resource):
 class RefreshSession(Resource):
     @jwt_required(refresh=True)
     def get(self):
-        identity = get_jwt_identity()
-        new_access_token = create_access_token(identity=identity)
+        try:
+            identity = get_jwt_identity()
+            user = Users.query.filter_by(email = identity).first()
 
-        return make_response(
-            jsonify({"access_token": new_access_token}),
-            200
-        )
+            if not user:
+                raise ValueError("User not found")
+
+            new_access_token = create_access_token(identity=identity)
+            # new_refresh_token = create_refresh_token(identity=identity)
+
+
+            user_dict = {
+                "username": user.name,
+                "cart": [cart_item.to_dict() for cart_item in user.my_cart],
+                "tokens": {
+                    "access": new_access_token,
+                },
+                "id": user.id,  
+            }
+
+            response = make_response(
+                jsonify(user_dict),
+                200
+            )
+            return response
     
+        except ValueError:
+            raise BadRequest(["validation errors"]) 
 
+        
+    
 @ns.route('/addtocart')
 class AddToCart(Resource):
     @ns.expect(cart_model)
