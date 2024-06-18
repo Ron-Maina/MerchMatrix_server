@@ -81,12 +81,12 @@ class Login(Resource):
     @ns.expect(user_login_model) 
     def post(self):
         try:
-            print('server reached')
             data = request.get_json()
+            user_data = data.get('user', {})
             # subject = data.get('sub')
 
-            user = Users.query.filter_by(email = data.get('email')).first()
-            # password = data.get('password')
+            user = Users.query.filter_by(email = user_data.get('email')).first()
+            password = user_data.get('password')
 
             # if subject:
             #     access_token = create_access_token(identity=data.get('email'))
@@ -105,7 +105,7 @@ class Login(Resource):
 
             #     return response
                
-            if (user):
+            if (user) and (user.authenticate(password) == True):
                 access_token = create_access_token(identity=user.email)
                 refresh_token = create_refresh_token(identity=user.email)
 
@@ -121,7 +121,7 @@ class Login(Resource):
                     },
                     200
                 ))
-                response.headers.add('Access-Control-Allow-Origin', '*')
+                # response.headers.add('Access-Control-Allow-Origin', '*')
                 return response
             
             return jsonify ({"error": "Invalid Username or Password"}), 400
