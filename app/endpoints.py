@@ -168,27 +168,31 @@ class RefreshSession(Resource):
     
 @ns.route('/addtocart')
 class AddToCart(Resource):
+    @jwt_required()
     @ns.expect(cart_model)
     def post(self):
         try:
             data = request.get_json()
+            product_data = data.get('product', {})
 
             print(data)
 
             if data:
                 added_to_cart = Cart(
-                    product_name = data.get('title'),
-                    product_id = data.get('id'),
-                    payment_status = data.get(False),
-                    user_id = randint(1,10),
+                    product_name = product_data.get('title'),
+                    product_id = product_data.get('product_id'),
+                    payment_status = product_data.get(False),
+                    user_id = product_data.get("user_id"),
                 )
 
                 db.session.add(added_to_cart)
                 db.session.commit()
 
-            # return make_response(
-            #     jsonify({added_to_cart})
-            # )
+                response = make_response(
+                    jsonify(added_to_cart.to_dict()),
+                    200
+                )
+                return response
 
         except ValueError:
             raise BadRequest(["validation errors"])  
