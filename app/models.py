@@ -45,6 +45,7 @@ class Cart(db.Model):
     product_id = db.Column(db.Integer)
     price = db.Column(db.Integer)
     payment_status = db.Column(db.Boolean, default=False)
+    image = db.Column(db.String)
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
@@ -55,7 +56,8 @@ class Cart(db.Model):
             'product_id': self.product_id,
             'price': self.price,
             'payment_status': self.payment_status,
-            'user_id': self.user_id
+            'user_id': self.user_id,
+            "image": self.image
         }
 
 
