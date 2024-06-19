@@ -181,6 +181,7 @@ class AddToCart(Resource):
                 added_to_cart = Cart(
                     product_name = product_data.get('title'),
                     product_id = product_data.get('product_id'),
+                    price = product_data.get('price'),
                     payment_status = product_data.get(False),
                     user_id = product_data.get("user_id"),
                 )
@@ -197,6 +198,29 @@ class AddToCart(Resource):
         except ValueError:
             raise BadRequest(["validation errors"])  
 
+
+@ns.route('/mycart')
+class AddToCart(Resource):
+    @jwt_required()
+    def get(self):
+        try: 
+            identity = get_jwt_identity()
+            user = Users.query.filter_by(email=identity).first()
+
+            if not user:
+                return make_response(jsonify({"error": "User not found"}), 404)
+
+            # Serialize the Cart objects
+            cart_items = [cart_item.to_dict() for cart_item in user.my_cart]
+
+            response = make_response(
+                jsonify(cart_items),
+                200
+            )
+            return response
+
+        except ValueError:
+            raise BadRequest(["validation errors"])
 
 
 
