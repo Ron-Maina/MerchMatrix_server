@@ -184,6 +184,7 @@ class AddToCart(Resource):
                     price = product_data.get('price'),
                     payment_status = product_data.get(False),
                     user_id = product_data.get("user_id"),
+                    image = product_data.get("image"),
                 )
 
                 db.session.add(added_to_cart)
@@ -221,6 +222,34 @@ class AddToCart(Resource):
 
         except ValueError:
             raise BadRequest(["validation errors"])
+        
+        
+@ns.route('/mycart/<int:user_id>/<int:product_id>')
+class DeleteFromCart(Resource):
+    @jwt_required()
+    def delete(self, user_id, product_id):
+        identity = get_jwt_identity()
+        user = Users.query.filter_by(email=identity).first()
+        
+        in_cart = db.session.query(Cart).filter(Cart.product_id == product_id, 
+                                Cart.user_id == user_id).first()
+        
+        print(in_cart)
+        
+        if in_cart:
+            db.session.delete(in_cart)
+            db.session.commit()
+
+            # Serialize the Cart objects
+            cart_items = [cart_item.to_dict() for cart_item in user.my_cart]
+
+            response = make_response(
+                jsonify(cart_items),
+                200
+            )
+            return response
+
+
 
 
 
